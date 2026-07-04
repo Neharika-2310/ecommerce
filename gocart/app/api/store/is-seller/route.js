@@ -1,9 +1,9 @@
 import prisma from "@/lib/prisma";
-import authSeller from "@/middlewares/seller";
+import authSeller from "@/middlewares/authseller";
 import { getAuth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
-// auth Seller
+// auth Sellerimport authSeller from "@/middlewares/authseller";
 export async function GET(request) {
     try {
         const { userId } = getAuth(request)
