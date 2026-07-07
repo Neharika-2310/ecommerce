@@ -1,5 +1,5 @@
-import { prisma } from "@/configs/prisma";
 
+import { prisma } from "@/lib/prisma";
 const authSeller = async (userId) => {
     try {
         const user = await prisma.user.findUnique({
