@@ -1,8 +1,8 @@
 {
-  "version": 3,
+  "version": 2,
   "builds": [
     {
-      "src": "package.json",
+      "src": "gocart/package.json",
       "use": "@vercel/next"
     }
   ]
