@@ -1,12 +1,12 @@
-﻿import { prisma } from "@/lib/prisma";
-import { auth } from "@clerk/nextjs/server";
+import { prisma } from "@/lib/prisma";
+import { getAuth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 // verify coupon
 export async function POST(request) {
 
     try {
-        const { userId, has } = await auth()
+        const { userId, has } = getAuth(request)
         const { code } = await request.json()
         const coupon = await prisma.coupon.findFirst({
             where: {
@@ -17,11 +17,9 @@ export async function POST(request) {
         if (!coupon) {
             return NextResponse.json({ error: "Coupon not Found" }, { status: 404 })
         }
-        if (coupon.forNewUser) {
-            const userorders = await prisma.order.findMany({
-                where: { userId }
-            })
 
+        if (coupon.forNewUser) {
+            const userorders = await prisma.order.findMany({ where: { userId } })
             if (userorders.length > 0) {
                 return NextResponse.json({ error: "coupon valid for new users" }, { status: 400 })
             }
@@ -33,6 +31,7 @@ export async function POST(request) {
                 return NextResponse.json({ error: "coupon valid for members only" }, { status: 400 })
             }
         }
+
         return NextResponse.json({ coupon })
 
     } catch (error) {

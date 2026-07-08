@@ -1,10 +1,52 @@
+import { createAsyncThunk } from '@reduxjs/toolkit'
 import { createSlice } from '@reduxjs/toolkit'
+import axios from 'axios'
+
+let debounceTimer = null
+
+export const uploadCart = createAsyncThunk('cart/uploadCart',
+    async ({ getToken }, thunkAPI) => {
+        try {
+            clearTimeout(debounceTimer)
+
+            debounceTimer = setTimeout(async () => {
+                const { cartItems } = thunkAPI.getState().cart
+                const token = await getToken()
+
+                await axios.post('/api/cart', { cart: cartItems }, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                })
+            }, 1000)
+        } catch (error) {
+            return thunkAPI.rejectWithValue(error.response.data)
+        }
+    }
+)
+
+export const fetchCart = createAsyncThunk('cart/fetchCart',
+    async ({ getToken }, thunkAPI) => {
+        try {
+            const token = await getToken()
+            const { data } = await axios.get('/api/cart', {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            })
+            return data
+        } catch (error) {
+            return thunkAPI.rejectWithValue(error.response.data)
+        }
+    }
+)
 
 const cartSlice = createSlice({
     name: 'cart',
     initialState: {
         total: 0,
         cartItems: {},
+        loaded: false,
     },
     reducers: {
         addToCart: (state, action) => {
@@ -35,6 +77,16 @@ const cartSlice = createSlice({
             state.cartItems = {}
             state.total = 0
         },
+    },
+    extraReducers: (builder) => {
+        builder.addCase(fetchCart.fulfilled, (state, action) => {
+            state.cartItems = action.payload.cart
+            state.total = Object.values(action.payload.cart).reduce((acc, items) => acc + items, 0)
+            state.loaded = true
+        })
+        builder.addCase(fetchCart.rejected, (state) => {
+            state.loaded = true
+        })
     }
 })
 

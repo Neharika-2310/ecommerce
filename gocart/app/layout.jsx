@@ -3,6 +3,7 @@ import { Toaster } from "react-hot-toast";
 import StoreProvider from "@/app/StoreProvider";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
+import MultisessionAppSupport from "@/components/MultisessionAppSupport";
 
 const outfit = Outfit({ subsets: ["latin"], weight: ["400", "500", "600"] });
 
@@ -16,10 +17,12 @@ export default function RootLayout({ children }) {
         <html lang="en">
             <body className={`${outfit.className} antialiased`}>
                 <ClerkProvider>
-                    <StoreProvider>
-                        <Toaster />
-                        {children}
-                    </StoreProvider>
+                    <MultisessionAppSupport>
+                        <StoreProvider>
+                            <Toaster />
+                            {children}
+                        </StoreProvider>
+                    </MultisessionAppSupport>
                 </ClerkProvider>
             </body>
         </html>
