@@ -1,8 +1,10 @@
+import { metadata } from "@/app/layout";
 import { prisma } from "@/lib/prisma";
 import { getAuth } from "@clerk/nextjs/server";
 import { PaymentMethod } from "@prisma/client";
+import { Currency } from "lucide-react";
 import { NextResponse } from "next/server";
-
+import Stripe from "stripe";
 export async function POST(request) {
   try {
     const { userId, has } = getAuth(request);
@@ -104,6 +106,41 @@ export async function POST(request) {
       orderIds.push(order.id);
     }
 
+    if (paymentMethod === 'STRIPE') {
+      if (!process.env.STRIPE_SECRET_KEY) {
+        return NextResponse.json({ error: 'Stripe secret key is not configured' }, { status: 500 });
+      }
+
+      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+        apiVersion: '2022-11-15',
+      });
+      const origin = await request.headers.get('origin');
+      const session = await stripe.checkout.sessions.create({
+        line_items: [
+          {
+            price_data: {
+              currency: 'inr',
+              product_data: {
+                name: 'Order',
+              },
+              unit_amount: Math.round(fullAmount * 100), // ₹1,999.00 (amount in paise)
+            },
+            quantity: 1,
+          },
+        ],
+        expires_at: Math.floor(Date.now() / 1000) + 30 * 60,
+        mode: 'payment',
+        success_url: `${origin}/loading?nextUrl=orders`,
+        cancel_url: `${origin}/cart`,
+        metadata: {
+          orderIds: orderIds.join(','),
+          userId,
+          appId: 'gocart',
+        },
+      });
+
+      return NextResponse.json({ session });
+    }
     // clear the cart
     await prisma.user.update({
       where: { id: userId },

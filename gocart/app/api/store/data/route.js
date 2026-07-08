@@ -1,31 +1,55 @@
-
-
-
-
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
-// get store info and store products
 
+// Get store info and store products
 export async function GET(request) {
-    try{
-        const{searchParams}=new URL(request.url)
-        const usernames=searchParams.get("username").toLocaleLowerCase();
-        if(!usernames){
-            return NextResponse.json({ error: "missing username" },{status: 400});
+    try {
+        const { searchParams } = new URL(request.url);
+
+        const username = searchParams.get("username");
+
+        if (!username) {
+            return NextResponse.json(
+                { error: "missing username" },
+                { status: 400 }
+            );
         }
-        // get store info and instock products with ratings
-        const store= await prisma.store.findUnique({
-            where:{username: usernames, isActive: true},
-            include:{Products:{include:{ratings:true}}}
-        })
-        if(!store){
-            return NextResponse.json({ error: "no store found" },{status: 400});
+
+        // Get store info and in-stock products with ratings
+        const storeData = await prisma.store.findFirst({
+            where: {
+                username: username.toLowerCase(),
+                isActive: true,
+            },
+            include: {
+                Product: {
+                    include: {
+                        rating: true,
+                    },
+                },
+            },
+        });
+
+        if (!storeData) {
+            return NextResponse.json(
+                { error: "no store found" },
+                { status: 404 }
+            );
         }
-        return NextResponse.json({ store })
+
+        return NextResponse.json({
+            store: {
+                ...storeData,
+                product: storeData.Product,
+            },
+        });
 
     } catch (error) {
-        console.error(error)
-        return NextResponse.json({ error: error.code || error.message }, 
-            { status: 400 })
+        console.error(error);
+
+        return NextResponse.json(
+            { error: error.code || error.message },
+            { status: 400 }
+        );
     }
 }
