@@ -68,7 +68,22 @@ export async function POST(request) {
         return NextResponse.json({ ...result })
 
     } catch (error) {
-        console.error(error);
-        return NextResponse.json({ error: error.code || error.message }, { status: 400 })
+    console.error(error);
+
+    if (error.status === 429) {
+        return NextResponse.json(
+            {
+                error: "AI service is busy right now. Please try again in a few minutes."
+            },
+            { status: 429 }
+        );
     }
+
+    return NextResponse.json(
+        {
+            error: error.code || error.message || "Something went wrong."
+        },
+        { status: 400 }
+    );
+}
 }
