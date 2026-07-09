@@ -36,7 +36,7 @@ model User {
   addresses Address[]
   ratings   Rating[]
   createdAt DateTime  @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
+  updatedAt DateTime  @default(now()) @updatedAt
 }
 
 model Store {
@@ -84,7 +84,7 @@ model Coupon {
   isPublic    Boolean  @default(false)
   expiresAt   DateTime
   createdAt   DateTime @default(now())
- updatedAt DateTime @default(now()) @updatedAt
+  updatedAt   DateTime @default(now()) @updatedAt
 }
 
 model Address {
