@@ -36,7 +36,7 @@ model User {
   addresses Address[]
   ratings   Rating[]
   createdAt DateTime  @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 model Store {
@@ -84,7 +84,7 @@ model Coupon {
   isPublic    Boolean  @default(false)
   expiresAt   DateTime
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+ updatedAt DateTime @default(now()) @updatedAt
 }
 
 model Address {
@@ -101,7 +101,7 @@ model Address {
   phone     String
   orders    Order[]
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 model Order {
@@ -125,7 +125,6 @@ model Order {
 }
 
 model OrderItem {
-  id        String  @id @default(cuid())
   orderId   String
   order     Order   @relation(fields: [orderId], references: [id])
   productId String
@@ -133,7 +132,9 @@ model OrderItem {
   quantity  Int
   price     Float
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@id([orderId, productId])
 }
 
 model Rating {

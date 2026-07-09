@@ -2,44 +2,39 @@ import { prisma } from "@/lib/prisma";
 import { getAuth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
-
-//update user cart
-export async function POST(request){
-    try{
-        const{userId}=getAuth(request)
-        const{cart}=await request.json()
+// update user cart
+export async function POST(request) {
+    try {
+        const { userId } = getAuth(request)
+        const { cart } = await request.json()
 
         // save cart to user object
         await prisma.user.update({
-            where:{id:userId},
-            data:{cart:cart}
+            where: { id: userId },
+            data: { cart: cart }
         })
 
-        return NextResponse.json({message:'cart updated'})
+        return NextResponse.json({ message: 'cart updated' })
 
-    }catch(error){
-         return NextResponse.json({error:error.message},{status:400})
-
+    } catch (error) {
+        console.error(error)
+        return NextResponse.json({ error: error.message }, { status: 400 })
     }
 }
+
 // get user cart
-export async function GET(request){
-    try{
-        const{userId}=getAuth(request)
-        const{cart}=await request.json()
+export async function GET(request) {
+    try {
+        const { userId } = getAuth(request)
 
-        // save cart to user object
-        const user= await prisma.user.findUnique({
-            where:{id:userId}
-
+        const user = await prisma.user.findUnique({
+            where: { id: userId }
         })
 
-        
-        return NextResponse.json({cart:user.cart})
+        return NextResponse.json({ cart: user.cart })
 
-    }catch(error){
+    } catch (error) {
         console.error(error);
-        return NextResponse.json({error:error.message},{status:400})
-
+        return NextResponse.json({ error: error.message }, { status: 400 })
     }
 }
