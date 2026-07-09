@@ -6,20 +6,16 @@ import ws from "ws";
 neonConfig.webSocketConstructor = ws;
 neonConfig.poolQueryViaFetch = true;
 
-const connectionString = process.env.DATABASE_URL;
+const connectionString = `${process.env.DATABASE_URL}`;
 
-const adapter = new PrismaNeon({
-  connectionString,
-});
+const adapter = new PrismaNeon({ connectionString });
 
 const globalForPrisma = global;
 
 export const prisma =
   globalForPrisma.prisma ??
-  new PrismaClient({
-    adapter,
-  });
+  new PrismaClient(process.env.NEXT_RUNTIME === "edge" ? { adapter } : {});
 
-if (process.env.NODE_ENV !== "production") {
+if (process.env.NEXT_RUNTIME !== "edge") {
   globalForPrisma.prisma = prisma;
 }
